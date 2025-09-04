@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Edit3, Bell, Play, Activity, FileText, Settings, TrendingUp, AlertTriangle, Download, Filter, Search, CheckCircle, XCircle, Clock, BarChart3, PieChart, Users, DollarSign } from 'lucide-react';
+import { Edit3, Bell, Play, Activity, FileText, Settings, TrendingUp, AlertTriangle, Download, CheckCircle, XCircle, Clock, BarChart3, PieChart, DollarSign } from 'lucide-react';
 
 // Mock data
 const mockSystemMetrics = {
@@ -23,7 +23,7 @@ const mockAlerts = [
   { id: 3, message: 'Rate limit approaching on Square API', severity: 'low', timestamp: new Date(), status: 'acknowledged', provider: 'Square' }
 ];
 
-// Simple Chart Components using HTML5 Canvas
+// Chart Components
 const TransactionVolumeChart = ({ timeRange }: { timeRange: string }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -34,58 +34,34 @@ const TransactionVolumeChart = ({ timeRange }: { timeRange: string }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Sample data based on time range
     const data = timeRange === '1h' 
       ? [120, 135, 150, 145, 160, 155, 170, 165, 180, 175, 190, 185]
       : timeRange === '24h'
       ? [1200, 1350, 1500, 1450, 1600, 1550, 1700, 1650, 1800, 1750, 1900, 1850]
       : [12000, 13500, 15000, 14500, 16000, 15500, 17000, 16500, 18000, 17500, 19000, 18500];
 
-    const labels = timeRange === '1h'
-      ? ['10min', '20min', '30min', '40min', '50min', '60min']
-      : timeRange === '24h'
-      ? ['4h', '8h', '12h', '16h', '20h', '24h']
-      : ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-
-    // Chart dimensions
     const padding = 40;
     const chartWidth = canvas.width - 2 * padding;
     const chartHeight = canvas.height - 2 * padding;
-
-    // Find max value for scaling
     const maxValue = Math.max(...data);
     const scale = chartHeight / maxValue;
 
     // Draw axes
     ctx.strokeStyle = '#e5e7eb';
     ctx.lineWidth = 1;
-    
-    // Y-axis
     ctx.beginPath();
     ctx.moveTo(padding, padding);
     ctx.lineTo(padding, canvas.height - padding);
     ctx.stroke();
     
-    // X-axis
     ctx.beginPath();
     ctx.moveTo(padding, canvas.height - padding);
     ctx.lineTo(canvas.width - padding, canvas.height - padding);
     ctx.stroke();
 
-    // Draw grid lines
-    ctx.strokeStyle = '#f3f4f6';
-    for (let i = 1; i <= 5; i++) {
-      const y = padding + (chartHeight * i) / 5;
-      ctx.beginPath();
-      ctx.moveTo(padding, y);
-      ctx.lineTo(canvas.width - padding, y);
-      ctx.stroke();
-    }
-
-    // Draw the line chart
+    // Draw line chart
     ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -113,27 +89,6 @@ const TransactionVolumeChart = ({ timeRange }: { timeRange: string }) => {
       ctx.fill();
     });
 
-    // Add labels
-    ctx.fillStyle = '#6b7280';
-    ctx.font = '12px Inter, system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    
-    // Y-axis labels
-    for (let i = 0; i <= 5; i++) {
-      const value = Math.round((maxValue * i) / 5);
-      const y = canvas.height - padding - (chartHeight * i) / 5;
-      ctx.textAlign = 'right';
-      ctx.fillText(value.toString(), padding - 10, y + 4);
-    }
-
-    // X-axis labels
-    const labelStep = Math.max(1, Math.floor(data.length / labels.length));
-    labels.forEach((label, index) => {
-      const x = padding + (chartWidth * index * labelStep) / (data.length - 1);
-      ctx.textAlign = 'center';
-      ctx.fillText(label, x, canvas.height - padding + 20);
-    });
-
   }, [timeRange]);
 
   return (
@@ -157,15 +112,12 @@ const ProviderPerformanceChart = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Provider data
     const providers = ['Stripe', 'PayPal', 'Square'];
     const successRates = [99.2, 98.8, 96.5];
     const colors = ['#10b981', '#f59e0b', '#8b5cf6'];
 
-    // Chart dimensions
     const padding = 40;
     const chartWidth = canvas.width - 2 * padding;
     const chartHeight = canvas.height - 2 * padding;
@@ -174,14 +126,11 @@ const ProviderPerformanceChart = () => {
     // Draw axes
     ctx.strokeStyle = '#e5e7eb';
     ctx.lineWidth = 1;
-    
-    // Y-axis
     ctx.beginPath();
     ctx.moveTo(padding, padding);
     ctx.lineTo(padding, canvas.height - padding);
     ctx.stroke();
     
-    // X-axis
     ctx.beginPath();
     ctx.moveTo(padding, canvas.height - padding);
     ctx.lineTo(canvas.width - padding, canvas.height - padding);
@@ -193,28 +142,15 @@ const ProviderPerformanceChart = () => {
       const barHeight = (rate / 100) * chartHeight;
       const y = canvas.height - padding - barHeight;
 
-      // Draw bar
       ctx.fillStyle = colors[index];
       ctx.fillRect(x, y, barWidth, barHeight);
 
-      // Add value label on top of bar
       ctx.fillStyle = '#374151';
       ctx.font = '12px Inter, system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`${rate}%`, x + barWidth / 2, y - 5);
-
-      // Add provider name
       ctx.fillText(providers[index], x + barWidth / 2, canvas.height - padding + 20);
     });
-
-    // Y-axis labels
-    ctx.fillStyle = '#6b7280';
-    ctx.textAlign = 'right';
-    for (let i = 0; i <= 5; i++) {
-      const value = (i * 20).toString() + '%';
-      const y = canvas.height - padding - (chartHeight * i) / 5;
-      ctx.fillText(value, padding - 10, y + 4);
-    }
 
   }, []);
 
@@ -229,7 +165,7 @@ const ProviderPerformanceChart = () => {
   );
 };
 
-// PDF Generation Functions
+// PDF Generation
 const generatePDF = (reportType: string, dateRange: string) => {
   const doc = `
 Payment Gateway Dashboard - ${reportType} Report
@@ -268,13 +204,11 @@ ALERTS & INCIDENTS
 
 Report generated by: Abayomi Ajayi, Product Manager
 Dashboard: Payment Gateway Management System
-Contact: abayomi@company.com
 
 ===========================================
 End of Report
 `;
 
-  // Create and download the text file (simulating PDF)
   const blob = new Blob([doc], { type: 'text/plain' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -287,8 +221,128 @@ End of Report
   document.body.removeChild(a);
 };
 
-// Analytics Tab Component with Working Charts
-const AnalyticsTab = ({ systemMetrics }: any) => {
+// Tab Components
+const OverviewTab = ({ systemMetrics, providers, alerts }: any) => {
+  const [customLayout, setCustomLayout] = useState(false);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Dashboard Overview</h2>
+          <p className="text-gray-600">Monitor your payment gateway performance</p>
+        </div>
+        <button
+          onClick={() => setCustomLayout(!customLayout)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+        >
+          <Edit3 className="h-4 w-4 mr-2" />
+          {customLayout ? 'Exit Customize' : 'Customize Layout'}
+        </button>
+      </div>
+
+      {customLayout && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-blue-800">
+            <strong>Customization Mode:</strong> Layout customization features available. 
+            This demonstrates the framework for advanced dashboard personalization.
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-900">{systemMetrics.transactions}</div>
+            <div className="text-sm text-gray-600">Transactions</div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-green-600">{systemMetrics.successRate}%</div>
+            <div className="text-sm text-gray-600">Success Rate</div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-orange-600">{alerts.length}</div>
+            <div className="text-sm text-gray-600">Active Alerts</div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-purple-600">{systemMetrics.avgResponse}ms</div>
+            <div className="text-sm text-gray-600">Avg Response</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Providers</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {providers.map((provider: any, index: number) => (
+            <div key={index} className="bg-white p-6 rounded-lg border shadow-sm">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">{provider.name}</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Uptime</span>
+                  <div className="flex items-center">
+                    <div className={`w-2 h-2 rounded-full mr-2 ${provider.status === 'online' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <span className="font-semibold">{provider.uptime}</span>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Success Rate</span>
+                  <span className="font-semibold">{provider.successRate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Response Time</span>
+                  <span className="font-semibold">{provider.responseTime}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Transactions</h3>
+        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Provider</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              <tr>
+                <td className="px-6 py-4 text-sm text-gray-900">#12345</td>
+                <td className="px-6 py-4 text-sm text-gray-900">Stripe</td>
+                <td className="px-6 py-4 text-sm text-gray-900">$299.00</td>
+                <td className="px-6 py-4">
+                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Success</span>
+                </td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 text-sm text-gray-900">#12346</td>
+                <td className="px-6 py-4 text-sm text-gray-900">PayPal</td>
+                <td className="px-6 py-4 text-sm text-gray-900">$149.50</td>
+                <td className="px-6 py-4">
+                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Success</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AnalyticsTab = () => {
   const [timeRange, setTimeRange] = useState('24h');
   
   const analyticsData = {
@@ -330,7 +384,6 @@ const AnalyticsTab = ({ systemMetrics }: any) => {
         </div>
       </div>
 
-      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between">
@@ -370,7 +423,6 @@ const AnalyticsTab = ({ systemMetrics }: any) => {
         </div>
       </div>
 
-      {/* Working Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Transaction Volume Trend</h3>
@@ -389,7 +441,6 @@ const AnalyticsTab = ({ systemMetrics }: any) => {
   );
 };
 
-// Alerts Tab Component
 const AlertsTab = ({ alerts: initialAlerts }: any) => {
   const [alerts, setAlerts] = useState(initialAlerts);
   const [filter, setFilter] = useState('all');
@@ -445,7 +496,6 @@ const AlertsTab = ({ alerts: initialAlerts }: any) => {
         </div>
       </div>
 
-      {/* Alert Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between">
@@ -476,7 +526,6 @@ const AlertsTab = ({ alerts: initialAlerts }: any) => {
         </div>
       </div>
 
-      {/* Alerts List */}
       <div className="bg-white rounded-lg border shadow-sm">
         <div className="px-6 py-4 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Recent Alerts</h3>
@@ -526,7 +575,6 @@ const AlertsTab = ({ alerts: initialAlerts }: any) => {
   );
 };
 
-// Failover Controls Tab Component
 const FailoverTab = ({ providers }: any) => {
   const [failoverMode, setFailoverMode] = useState('automatic');
   const [loadBalancing, setLoadBalancing] = useState(true);
@@ -540,7 +588,6 @@ const FailoverTab = ({ providers }: any) => {
         </div>
       </div>
 
-      {/* Control Panel */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Failover Settings</h3>
@@ -590,7 +637,6 @@ const FailoverTab = ({ providers }: any) => {
         </div>
       </div>
 
-      {/* Provider Routing */}
       <div className="bg-white rounded-lg border shadow-sm">
         <div className="px-6 py-4 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Traffic Routing</h3>
@@ -620,7 +666,6 @@ const FailoverTab = ({ providers }: any) => {
   );
 };
 
-// Reports Tab Component with Working PDF Generation
 const ReportsTab = () => {
   const [selectedReport, setSelectedReport] = useState('');
   const [dateRange, setDateRange] = useState('30d');
@@ -647,7 +692,7 @@ const ReportsTab = () => {
     reportTypes.forEach((report, index) => {
       setTimeout(() => {
         generatePDF(report.name, dateRange);
-      }, index * 500); // Stagger downloads
+      }, index * 500);
     });
   };
 
@@ -667,7 +712,6 @@ const ReportsTab = () => {
         </button>
       </div>
 
-      {/* Report Generator */}
       <div className="bg-white p-6 rounded-lg border shadow-sm">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Generate Report</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -709,7 +753,6 @@ const ReportsTab = () => {
         </div>
       </div>
 
-      {/* Available Reports */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {reportTypes.map((report) => (
           <div key={report.id} className="bg-white p-6 rounded-lg border shadow-sm">
@@ -731,7 +774,6 @@ const ReportsTab = () => {
         ))}
       </div>
 
-      {/* Recent Reports */}
       <div className="bg-white rounded-lg border shadow-sm">
         <div className="px-6 py-4 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Recent Reports</h3>
@@ -759,132 +801,6 @@ const ReportsTab = () => {
   );
 };
 
-// Overview Tab Component (your existing one)
-const OverviewTab = ({ systemMetrics, providers, alerts }: any) => {
-  const [customLayout, setCustomLayout] = useState(false);
-
-  return (
-    <div className="space-y-6">
-      {/* Header with Simple Customization */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">Dashboard Overview</h2>
-          <p className="text-gray-600">Monitor your payment gateway performance</p>
-        </div>
-        <button
-          onClick={() => setCustomLayout(!customLayout)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-        >
-          <Edit3 className="h-4 w-4 mr-2" />
-          {customLayout ? 'Exit Customize' : 'Customize Layout'}
-        </button>
-      </div>
-
-      {/* Customizable Message */}
-      {customLayout && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-800">
-            <strong>Customization Mode:</strong> Layout customization features will be added here. 
-            This demonstrates the framework for future drag-and-drop functionality.
-          </p>
-        </div>
-      )}
-
-      {/* System Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-gray-900">{systemMetrics.transactions}</div>
-            <div className="text-sm text-gray-600">Transactions</div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">{systemMetrics.successRate}%</div>
-            <div className="text-sm text-gray-600">Success Rate</div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600">{alerts.length}</div>
-            <div className="text-sm text-gray-600">Active Alerts</div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">{systemMetrics.avgResponse}ms</div>
-            <div className="text-sm text-gray-600">Avg Response</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Provider Status Cards */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Providers</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {providers.map((provider: any, index: number) => (
-            <div key={index} className="bg-white p-6 rounded-lg border shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">{provider.name}</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Uptime</span>
-                  <div className="flex items-center">
-                    <div className={`w-2 h-2 rounded-full mr-2 ${provider.status === 'online' ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    <span className="font-semibold">{provider.uptime}</span>
-                  </div>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Success Rate</span>
-                  <span className="font-semibold">{provider.successRate}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Response Time</span>
-                  <span className="font-semibold">{provider.responseTime}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Transactions Table */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Transactions</h3>
-        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Provider</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              <tr>
-                <td className="px-6 py-4 text-sm text-gray-900">#12345</td>
-                <td className="px-6 py-4 text-sm text-gray-900">Stripe</td>
-                <td className="px-6 py-4 text-sm text-gray-900">$299.00</td>
-                <td className="px-6 py-4">
-                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Success</span>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 text-sm text-gray-900">#12346</td>
-                <td className="px-6 py-4 text-sm text-gray-900">PayPal</td>
-                <td className="px-6 py-4 text-sm text-gray-900">$149.50</td>
-                <td className="px-6 py-4">
-                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Success</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // Main Dashboard Component
 export default function PaymentGatewayDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -893,7 +809,6 @@ export default function PaymentGatewayDashboard() {
   const [alerts] = useState(mockAlerts);
   const [isSimulating, setIsSimulating] = useState(false);
 
-  // Simulate real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
       if (isSimulating) {
@@ -921,7 +836,7 @@ export default function PaymentGatewayDashboard() {
       case 'overview':
         return <OverviewTab systemMetrics={systemMetrics} providers={providers} alerts={alerts} />;
       case 'analytics':
-        return <AnalyticsTab systemMetrics={systemMetrics} />;
+        return <AnalyticsTab />;
       case 'alerts':
         return <AlertsTab alerts={alerts} />;
       case 'failover':
@@ -935,7 +850,6 @@ export default function PaymentGatewayDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
@@ -963,7 +877,6 @@ export default function PaymentGatewayDashboard() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
@@ -993,7 +906,6 @@ export default function PaymentGatewayDashboard() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {renderActiveTab()}
       </div>
